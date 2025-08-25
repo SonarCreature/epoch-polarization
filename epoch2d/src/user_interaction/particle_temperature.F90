@@ -18,6 +18,8 @@ MODULE particle_temperature
   USE constants
   USE random_generator
   USE evaluator
+  ! ALN: import necessary for reading in bz field for initial spin distribution
+  ! USE custom_parser
 
   IMPLICIT NONE
 
@@ -67,12 +69,21 @@ CONTAINS
 
       IF (direction == c_dir_x) current%part_p(1) = &
           momentum_from_temperature(mass, temp_local, drift_local)
+          
+      IF (direction == c_dir_x) current%part_sp(1) = &
+          0
 
       IF (direction == c_dir_y) current%part_p(2) = &
           momentum_from_temperature(mass, temp_local, drift_local)
+      
+      IF (direction == c_dir_y) current%part_sp(2) = &
+          0
 
       IF (direction == c_dir_z) current%part_p(3) = &
           momentum_from_temperature(mass, temp_local, drift_local)
+          
+      IF (direction == c_dir_z) current%part_sp(3) = &
+          spin_from_temperature(mass, temp_local, drift_local)
 
       current => current%next
       ipart = ipart + 1
@@ -397,6 +408,26 @@ CONTAINS
 
   END FUNCTION momentum_from_temperature
 
+  FUNCTION spin_from_temperature(mass, temperature, drift)
+
+    REAL(num), INTENT(IN) :: mass, temperature, drift
+    REAL(num) :: spin_from_temperature
+    REAL(num) :: u = 2
+    DOUBLE PRECISION :: stdev, mu
+    REAL(num) :: factor, numerator, denominator
+    REAL :: randomNumber, odds
+    CALL RANDOM_NUMBER(randomNumber)
+    
+    ! ALN: Basic Statmech calculation for initial spin (jank sorry)
+    mu = 
+    factor = (-2 * (bz(0,0) * mu) / (kb * temperature))
+    numerator = 1
+    denominator = 1 + EXP(factor)
+    odds = numerator/denominator
+    spin_from_temperature = 1
+    if (randomNumber > odds) spin_from_temperature = 0
+
+  END FUNCTION spin_from_temperature
 
 
   ! Function for generating momenta of thermal particles in a particular

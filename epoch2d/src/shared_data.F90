@@ -92,6 +92,8 @@ MODULE shared_data
   ! particle pack and unpack routines
   TYPE particle
     REAL(num), DIMENSION(3) :: part_p
+  ! ALN: Added particle spin 3d vector
+    REAL(num), DIMENSION(3) :: part_sp
     REAL(num), DIMENSION(c_ndims) :: part_pos
 #if !defined(PER_SPECIES_WEIGHT) || defined(PHOTONS)
     REAL(num) :: weight
@@ -112,6 +114,9 @@ MODULE shared_data
     INTEGER :: id
 #elif PARTICLE_ID
     INTEGER(i8) :: id
+#endif
+#ifdef COLLISIONS_TEST
+    INTEGER :: coll_count
 #endif
 #ifdef WORK_DONE_INTEGRATED
     REAL(num) :: work_x
@@ -734,6 +739,10 @@ MODULE shared_data
     LOGICAL :: px_data_given
     LOGICAL :: py_data_given
     LOGICAL :: pz_data_given
+    !ALN: Spin Data
+    LOGICAL :: spx_data_given
+    LOGICAL :: spy_data_given
+    LOGICAL :: spz_data_given
     ! Temporal injection data
     LOGICAL :: t_data_given
     ! Weight data
@@ -756,6 +765,10 @@ MODULE shared_data
     CHARACTER(LEN=string_length) :: px_data
     CHARACTER(LEN=string_length) :: py_data
     CHARACTER(LEN=string_length) :: pz_data
+    !ALN: Spin Data
+    CHARACTER(LEN=string_length) :: spx_data
+    CHARACTER(LEN=string_length) :: spy_data
+    CHARACTER(LEN=string_length) :: spz_data
     ! Temporal injection data
     CHARACTER(LEN=string_length) :: t_data
     ! Weight data
@@ -854,6 +867,17 @@ MODULE shared_data
     LOGICAL :: px_data_given
     LOGICAL :: py_data_given
     LOGICAL :: pz_data_given
+    
+    !ALN: Spin Data
+    CHARACTER(LEN=string_length) :: spx_data
+    CHARACTER(LEN=string_length) :: spy_data
+    CHARACTER(LEN=string_length) :: spz_data
+    INTEGER(KIND=MPI_OFFSET_KIND) :: spx_data_offset
+    INTEGER(KIND=MPI_OFFSET_KIND) :: spy_data_offset
+    INTEGER(KIND=MPI_OFFSET_KIND) :: spz_data_offset
+    LOGICAL :: spx_data_given
+    LOGICAL :: spy_data_given
+    LOGICAL :: spz_data_given
 #if !defined(PER_SPECIES_WEIGHT) || defined(PHOTONS)
     ! Weight data
     CHARACTER(LEN=string_length) :: w_data

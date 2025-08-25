@@ -42,7 +42,7 @@ CONTAINS
 
   SUBROUTINE set_partlist_size
 
-    nvar = 3 + c_ndims
+    nvar = 6 + c_ndims
 #if !defined(PER_SPECIES_WEIGHT) || defined(PHOTONS) || defined(BREMSSTRAHLUNG)
     nvar = nvar+1
 #endif
@@ -56,6 +56,9 @@ CONTAINS
     nvar = nvar+2
 #endif
 #if defined(PARTICLE_ID) || defined(PARTICLE_ID4)
+    nvar = nvar+1
+#endif
+#ifdef COLLISIONS_TEST
     nvar = nvar+1
 #endif
 #ifdef PHOTONS
@@ -419,6 +422,9 @@ CONTAINS
     cpos = cpos+c_ndims
     array(cpos:cpos+2) = a_particle%part_p
     cpos = cpos+3
+    !ALN: Pack Spin
+    array(cpos:cpos+2) = a_particle%part_sp
+    cpos = cpos+3
 #if !defined(PER_SPECIES_WEIGHT) || defined(PHOTONS) || defined(BREMSSTRAHLUNG)
     array(cpos) = a_particle%weight
     cpos = cpos+1
@@ -439,6 +445,10 @@ CONTAINS
 #endif
 #if defined(PARTICLE_ID) || defined(PARTICLE_ID4)
     array(cpos) = REAL(a_particle%id, num)
+    cpos = cpos+1
+#endif
+#ifdef COLLISIONS_TEST
+    array(cpos) = REAL(a_particle%coll_count, num)
     cpos = cpos+1
 #endif
 #ifdef PHOTONS
@@ -482,7 +492,7 @@ CONTAINS
 
   SUBROUTINE unpack_particle(array, a_particle)
 
-    REAL(num), DIMENSION(:), INTENT(IN) :: array
+    REAL(num), DIMENSION(3), INTENT(IN) :: array
     TYPE(particle), POINTER :: a_particle
     INTEGER(i8) :: cpos, temp_i8
 
@@ -490,6 +500,9 @@ CONTAINS
     a_particle%part_pos = array(cpos:cpos+c_ndims-1)
     cpos = cpos+c_ndims
     a_particle%part_p = array(cpos:cpos+2)
+    cpos = cpos+3
+    !ALN: Unpack Spin
+    a_particle%part_sp = array(cpos:cpos+2)
     cpos = cpos+3
 #if !defined(PER_SPECIES_WEIGHT) || defined(PHOTONS) || defined(BREMSSTRAHLUNG)
     a_particle%weight = array(cpos)
@@ -514,6 +527,10 @@ CONTAINS
     cpos = cpos+1
 #elif PARTICLE_ID
     a_particle%id = NINT(array(cpos),i8)
+    cpos = cpos+1
+#endif
+#ifdef COLLISIONS_TEST
+    a_particle%coll_count = NINT(array(cpos))
     cpos = cpos+1
 #endif
 #ifdef PHOTONS
@@ -560,6 +577,8 @@ CONTAINS
 
     new_particle%part_p = 0.0_num
     new_particle%part_pos = 0.0_num
+! ALN: Spin initialized.
+    new_particle%part_sp = 0.0_num
 #if !defined(PER_SPECIES_WEIGHT) || defined(PHOTONS) || defined(BREMSSTRAHLUNG)
     new_particle%weight = 0.0_num
 #endif
@@ -573,6 +592,9 @@ CONTAINS
 #endif
 #if defined(PARTICLE_ID) || defined(PARTICLE_ID4)
     new_particle%id = 0
+#endif
+#ifdef COLLISIONS_TEST
+    new_particle%coll_count = 0
 #endif
 #if defined(PHOTONS) || defined(BREMSSTRAHLUNG)
     ! This assigns an optical depth to newly created particle

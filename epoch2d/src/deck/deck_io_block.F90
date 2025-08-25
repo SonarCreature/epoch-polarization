@@ -542,6 +542,16 @@ CONTAINS
 
     ELSE IF (str_cmp(element, 'pz')) THEN
       elementselected = c_dump_part_pz
+    !ALN: Spin output
+    ELSE IF (str_cmp(element, 'spx')) THEN
+      elementselected = c_dump_part_spx
+
+    ELSE IF (str_cmp(element, 'spy')) THEN
+      elementselected = c_dump_part_spy
+
+    ELSE IF (str_cmp(element, 'spz')) THEN
+      elementselected = c_dump_part_spz
+
 
     ELSE IF (str_cmp(element, 'vx')) THEN
       elementselected = c_dump_part_vx
@@ -1092,6 +1102,12 @@ CONTAINS
         IOR(io_block%dumpmask(c_dump_part_py), c_io_restartable)
     io_block%dumpmask(c_dump_part_pz) = &
         IOR(io_block%dumpmask(c_dump_part_pz), c_io_restartable)
+    io_block%dumpmask(c_dump_part_spx) = &
+        IOR(io_block%dumpmask(c_dump_part_spx), c_io_restartable)
+    io_block%dumpmask(c_dump_part_spy) = &
+        IOR(io_block%dumpmask(c_dump_part_spy), c_io_restartable)
+    io_block%dumpmask(c_dump_part_spz) = &
+        IOR(io_block%dumpmask(c_dump_part_spz), c_io_restartable)
 #ifdef PHOTONS
     io_block%dumpmask(c_dump_part_opdepth) = &
         IOR(io_block%dumpmask(c_dump_part_opdepth), c_io_restartable)

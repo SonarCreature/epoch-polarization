@@ -610,6 +610,13 @@ CONTAINS
             'Py', 'kg.m/s', it_output_real)
         CALL write_particle_variable(c_dump_part_pz, code, &
             'Pz', 'kg.m/s', it_output_real)
+        !ALN: write spin output to sdf
+        CALL write_particle_variable(c_dump_part_spx, code, &
+            'Spx', 'N.m.s', it_output_real)
+        CALL write_particle_variable(c_dump_part_spy, code, &
+            'Spy', 'N.m.s', it_output_real)
+        CALL write_particle_variable(c_dump_part_spz, code, &
+            'Spz', 'N.m.s', it_output_real)
 
         CALL write_particle_variable(c_dump_part_vx, code, &
             'Vx', 'm/s', it_output_real)

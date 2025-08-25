@@ -211,11 +211,11 @@ DEFINES := $(DEFINE)
 
 # Include a unique global particle ID. The first flag defines the ID using
 # an 8-byte integer, the second uses 4-bytes.
-#DEFINES += $(D)PARTICLE_ID
+DEFINES += $(D)PARTICLE_ID
 #DEFINES += $(D)PARTICLE_ID4
 
 # Include QED routines
-#DEFINES += $(D)PHOTONS
+DEFINES += $(D)PHOTONS
 
 # Use the Trident process for pair production
 #DEFINES += $(D)TRIDENT_PHOTONS
@@ -233,6 +233,10 @@ DEFINES := $(DEFINE)
 
 # Don't generate any output at all. Useful for benchmarking.
 #DEFINES += $(D)NO_IO
+
+# Bypass the main simulation and only perform collision tests.
+# This flag should only ever be used for testing purposes.
+#DEFINES += $(D)COLLISIONS_TEST
 
 # Specify charge and mass per particle rather than per species.
 # This is a legacy option which will be removed soon.

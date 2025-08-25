@@ -635,7 +635,11 @@ MODULE constants
   INTEGER, PARAMETER :: c_dump_part_opdepth_brem = 71
   INTEGER, PARAMETER :: c_dump_probe_time        = 72
   INTEGER, PARAMETER :: c_dump_cou_log           = 73
-  INTEGER, PARAMETER :: num_vars_to_dump         = 73
+  !ALN: Added dump variables for spin
+  INTEGER, PARAMETER :: c_dump_part_spx           = 74
+  INTEGER, PARAMETER :: c_dump_part_spy          = 75
+  INTEGER, PARAMETER :: c_dump_part_spz           = 76
+  INTEGER, PARAMETER :: num_vars_to_dump         = 76
 
   INTEGER, PARAMETER :: c_subset_random     = 1
   INTEGER, PARAMETER :: c_subset_gamma_min  = 2
