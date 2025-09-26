@@ -53,6 +53,7 @@ CONTAINS
     ! Properties of the current particle. Copy out of particle arrays for speed
     REAL(num) :: part_x, part_y
     REAL(num) :: part_ux, part_uy, part_uz
+    REAL(num) :: part_spx, part_spy, part_spz
     REAL(num) :: part_q, part_mc, ipart_mc, part_weight, part_m
 #ifdef HC_PUSH
     REAL(num) :: beta_x, beta_y, beta_z, beta2, beta_dot_u, alpha, sigma
@@ -91,6 +92,10 @@ CONTAINS
     ! P+, P- and Tau variables from Boris1970, page27 of manual
     REAL(num) :: uxp, uxm, uyp, uym, uzp, uzm
     REAL(num) :: tau, taux, tauy, tauz, taux2, tauy2, tauz2
+
+    REAL(num) :: sxp, syp, szp, ap, sfac
+    REAL(num) :: omega, omegax, omegay, omegaz, omegax2, omegay2, omegaz2
+    REAL(num) :: v_cross_ex, v_cross_ey, v_cross_ez, v_dot_b
 
     ! charge to mass ratio modified by normalisation
     REAL(num) :: cmratio, ccmratio
@@ -159,7 +164,7 @@ CONTAINS
     idt = 1.0_num / dt
     dto2 = dt / 2.0_num
     dtco2 = c * dto2
-    dtfac = 0.5_num * dt * fac
+    dtfac = 0.5_num * dt * fac !0.5 * fac
     third = 1.0_num / 3.0_num
 
     idty = idt * idy * fac
@@ -421,11 +426,51 @@ CONTAINS
         uzp = ((1.0_num - taux2 - tauy2 + tauz2) * uzm &
             + 2.0_num * ((tauz * taux + tauy) * uxm &
             + (tauz * tauy - taux) * uym)) * tau
+        
+        !ALN: Spin rotation
+        ap = 1.8
+        v_dot_b = (uxp * bx_part) + (uyp * by_part) + (uzp * bz_part)
+        v_cross_ex = (uyp * bz_part - uzp * by_part)
+        v_cross_ey = (uzp * bx_part - uxp * bz_part)
+        v_cross_ez = (uxp * by_part - uyp * bx_part)
+        
+        sfac = - (part_q)/(part_m * c)
+        ! * dtfac/2
+        omegax = sfac * ((ap * 1/gamma_rel) * bx_part - &
+        ((ap * gamma_rel)/(gamma_rel + 1)) * (v_dot_b/c) &
+         * (uxp/c) - (ap + 1/(1 + gamma_rel))*v_cross_ex/c)
+        omegay = sfac * ((ap * 1/gamma_rel) * by_part - &
+        ((ap * gamma_rel)/(gamma_rel + 1)) * (v_dot_b/c) &
+        * (uyp/c) - (ap + 1/(1 + gamma_rel))*v_cross_ey/c)
+        omegaz = sfac * ((ap * 1/gamma_rel) * bz_part - &
+        ((ap * gamma_rel)/(gamma_rel + 1)) * (v_dot_b/c) &
+        * (uzp/c) - (ap + 1/(1 + gamma_rel))*v_cross_ez/c)
 
+        omegax2 = omegax**2
+        omegay2 = omegay**2
+        omegaz2 = omegaz**2
+
+        omega = 1.0_num / (1.0_num + omegax2 + omegay2 + omegaz2) * dtfac/2
+
+        sxp = ((1.0_num + omegax2 - omegay2 - omegaz2) * uxm &
+            + 2.0_num * ((omegax * omegay + omegaz) * uym &
+            + (omegax * omegaz - omegay) * uzm)) * omega
+        syp = ((1.0_num - omegax2 + omegay2 - omegaz2) * uym &
+            + 2.0_num * ((omegay * omegaz + omegax) * uzm &
+            + (omegay * omegax - omegaz) * uxm)) * omega
+        szp = ((1.0_num - omegax2 - omegay2 + omegaz2) * uzm &
+            + 2.0_num * ((omegaz * omegax + omegay) * uxm &
+            + (omegaz * omegay - omegax) * uym)) * omega
+        
         ! Rotation over, go to full timestep
         part_ux = uxp + cmratio * ex_part
         part_uy = uyp + cmratio * ey_part
         part_uz = uzp + cmratio * ez_part
+
+        part_spx = current%part_sp(1) + sxp
+        part_spy = current%part_sp(2) + syp
+        part_spz = current%part_sp(3) + szp
+        current%part_sp = (/ part_spx, part_spy, part_spz /)
 
         ! Calculate particle velocity from particle momentum
         part_u2 = part_ux**2 + part_uy**2 + part_uz**2

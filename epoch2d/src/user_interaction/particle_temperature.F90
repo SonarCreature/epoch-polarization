@@ -419,13 +419,12 @@ CONTAINS
     CALL RANDOM_NUMBER(randomNumber)
     
     ! ALN: Basic Statmech calculation for initial spin (jank sorry)
-    mu = 
     factor = (-2 * (bz(0,0) * mu) / (kb * temperature))
     numerator = 1
     denominator = 1 + EXP(factor)
     odds = numerator/denominator
     spin_from_temperature = 1
-    if (randomNumber > odds) spin_from_temperature = 0
+    if (randomNumber > odds) spin_from_temperature = -1
 
   END FUNCTION spin_from_temperature
 
