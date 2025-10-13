@@ -94,6 +94,8 @@ CONTAINS
     REAL(num) :: tau, taux, tauy, tauz, taux2, tauy2, tauz2
 
     REAL(num) :: sxp, syp, szp, ap, sfac
+    REAL(num) :: u_half_x, u_half_y, u_half_z, u_half2
+    REAL(num) :: gamma_half, beta_half_x, beta_half_y, beta_half_z
     REAL(num) :: omega, omegax, omegay, omegaz, omegax2, omegay2, omegaz2
     REAL(num) :: v_cross_ex, v_cross_ey, v_cross_ez, v_dot_b
 
@@ -428,14 +430,31 @@ CONTAINS
             + (tauz * tauy - taux) * uym)) * tau
         
         !ALN: Spin rotation
-        ap = 1.8
-        v_dot_b = (uxp * bx_part) + (uyp * by_part) + (uzp * bz_part)
-        v_cross_ex = (uyp * bz_part - uzp * by_part)
-        v_cross_ey = (uzp * bx_part - uxp * bz_part)
-        v_cross_ez = (uxp * by_part - uyp * bx_part)
+        !ap = 1.8
+        !v_dot_b = (uxp * bx_part) + (uyp * by_part) + (uzp * bz_part)
+        !v_cross_ex = (uyp * bz_part - uzp * by_part)
+        !v_cross_ey = (uzp * bx_part - uxp * bz_part)
+        !v_cross_ez = (uxp * by_part - uyp * bx_part)
+        !part_spx = current%part_sp(1)
+        !part_spy = current%part_sp(2)
+        !part_spz = current%part_sp(3)
         
-        sfac = - (part_q)/(part_m * c)
+        !sfac = - (part_q)/(part_m * c)
         ! * dtfac/2
+        
+        !Midstep Momenta
+        u_half_x = 0.5 * (uxp + uxm)
+        u_half_y = 0.5 * (uyp + uym)
+        u_half_z = 0.5 * (uzp + uzm)
+
+        u_half2 = u_half_x**2 + u_half_y**2 + u_half_z**2
+
+        gamma_half = SQRT(1 + u_half2)
+
+        beta_half_x = u_half_x/gamma_half
+        beta_half_y = u_half_y/gamma_half
+        beta_half_z = u_half_z/gamma_half
+
         omegax = sfac * ((ap * 1/gamma_rel) * bx_part - &
         ((ap * gamma_rel)/(gamma_rel + 1)) * (v_dot_b/c) &
          * (uxp/c) - (ap + 1/(1 + gamma_rel))*v_cross_ex/c)
