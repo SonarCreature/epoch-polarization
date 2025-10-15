@@ -97,7 +97,9 @@ CONTAINS
     REAL(num) :: u_half_x, u_half_y, u_half_z, u_half2
     REAL(num) :: gamma_half, beta_half_x, beta_half_y, beta_half_z
     REAL(num) :: omega, omegax, omegay, omegaz, omegax2, omegay2, omegaz2
-    REAL(num) :: v_cross_ex, v_cross_ey, v_cross_ez, v_dot_b
+    REAL(num) :: dot_beta_b, beta_cross_Ex, beta_cross_Ey, beta_cross_Ez
+    REAL(num) :: bx_term, by_term, bz_term, proj_x, proj_y, proj_z
+    REAL(num) :: ex_term, ey_term, ez_term
 
     ! charge to mass ratio modified by normalisation
     REAL(num) :: cmratio, ccmratio
@@ -435,11 +437,11 @@ CONTAINS
         !v_cross_ex = (uyp * bz_part - uzp * by_part)
         !v_cross_ey = (uzp * bx_part - uxp * bz_part)
         !v_cross_ez = (uxp * by_part - uyp * bx_part)
-        !part_spx = current%part_sp(1)
-        !part_spy = current%part_sp(2)
-        !part_spz = current%part_sp(3)
+        part_spx = current%part_sp(1)
+        part_spy = current%part_sp(2)
+        part_spz = current%part_sp(3)
         
-        !sfac = - (part_q)/(part_m * c)
+        sfac = - (part_q)/(part_m)
         ! * dtfac/2
         
         !Midstep Momenta
@@ -455,15 +457,33 @@ CONTAINS
         beta_half_y = u_half_y/gamma_half
         beta_half_z = u_half_z/gamma_half
 
-        omegax = sfac * ((ap * 1/gamma_rel) * bx_part - &
-        ((ap * gamma_rel)/(gamma_rel + 1)) * (v_dot_b/c) &
-         * (uxp/c) - (ap + 1/(1 + gamma_rel))*v_cross_ex/c)
-        omegay = sfac * ((ap * 1/gamma_rel) * by_part - &
-        ((ap * gamma_rel)/(gamma_rel + 1)) * (v_dot_b/c) &
-        * (uyp/c) - (ap + 1/(1 + gamma_rel))*v_cross_ey/c)
-        omegaz = sfac * ((ap * 1/gamma_rel) * bz_part - &
-        ((ap * gamma_rel)/(gamma_rel + 1)) * (v_dot_b/c) &
-        * (uzp/c) - (ap + 1/(1 + gamma_rel))*v_cross_ez/c)
+        dot_beta_b = beta_half_x * bx_part + beta_half_y &
+        * by_part + beta_half_z * bz_part
+
+        beta_cross_Ex = beta_half_y * ez_part - beta_half_z * ey_part
+        beta_cross_Ey = beta_half_z * ex_part - beta_half_x * ez_part
+        beta_cross_Ez = beta_half_x * ey_part - beta_half_y * ex_part
+
+        bx_term = (part_spx + 1/gamma_half) * bx_part
+        by_term = (part_spy + 1/gamma_half) * by_part
+        bz_term = (part_spz + 1/gamma_half) * bz_part
+
+        proj_x = (part_spx * gamma_half)/(gamma_half + 1) &
+        * dot_beta_b * beta_half_x
+        proj_y = (part_spy * gamma_half)/(gamma_half + 1) &
+        * dot_beta_b * beta_half_y
+        proj_z = (part_spz * gamma_half)/(gamma_half + 1) &
+        * dot_beta_b * beta_half_z
+
+        ex_term = (part_spx + 1/(gamma_half + 1)) * (beta_cross_Ex/c)
+        ey_term = (part_spy + 1/(gamma_half + 1)) * (beta_cross_Ey/c)
+        ez_term = (part_spz + 1/(gamma_half + 1)) * (beta_cross_Ez/c)
+
+
+        omegax = sfac * (bx_term - proj_x - ex_term)
+        omegay = sfac * (by_term - proj_y - ey_term)
+        omegaz = sfac * (bz_term - proj_z - ez_term)
+
 
         omegax2 = omegax**2
         omegay2 = omegay**2
