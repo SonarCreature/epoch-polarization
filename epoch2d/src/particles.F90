@@ -100,6 +100,9 @@ CONTAINS
     REAL(num) :: dot_beta_b, beta_cross_Ex, beta_cross_Ey, beta_cross_Ez
     REAL(num) :: bx_term, by_term, bz_term, proj_x, proj_y, proj_z
     REAL(num) :: ex_term, ey_term, ez_term
+    REAL(num) :: tx, ty, tz
+    REAL(num) :: spx_temp, spy_temp, spz_temp
+    REAL(num) :: svx, svy, svz
 
     ! charge to mass ratio modified by normalisation
     REAL(num) :: cmratio, ccmratio
@@ -491,15 +494,24 @@ CONTAINS
 
         omega = 1.0_num / (1.0_num + omegax2 + omegay2 + omegaz2) * dtfac/2
 
-        sxp = ((1.0_num + omegax2 - omegay2 - omegaz2) * uxm &
-            + 2.0_num * ((omegax * omegay + omegaz) * uym &
-            + (omegax * omegaz - omegay) * uzm)) * omega
-        syp = ((1.0_num - omegax2 + omegay2 - omegaz2) * uym &
-            + 2.0_num * ((omegay * omegaz + omegax) * uzm &
-            + (omegay * omegax - omegaz) * uxm)) * omega
-        szp = ((1.0_num - omegax2 - omegay2 + omegaz2) * uzm &
-            + 2.0_num * ((omegaz * omegax + omegay) * uxm &
-            + (omegaz * omegay - omegax) * uym)) * omega
+        tx = 0.5 * dtfac * omegax
+        ty = 0.5 * dtfac * omegay
+        tz = 0.5 * dtfac * omegaz
+
+        tau = 1/(1 + tx**2 + ty**2 + tz**2)
+
+        spx_temp = part_spx + (part_spy*tz - part_spz*ty)
+        spy_temp = part_spy + (part_spz*tx - part_spx*tz)
+        spz_temp = part_spz + (part_spx*ty - part_spy*tx)
+
+        svx = 2 * tx * tau
+        svy = 2 * ty * tau
+        svz = 2 * tz * tau
+
+        sxp = (spy_temp * svz - spz_temp * svy)
+        syp = (spz_temp * svx - spx_temp * svz)
+        szp = (spx_temp * svy - spy_temp * svx)
+
         
         ! Rotation over, go to full timestep
         part_ux = uxp + cmratio * ex_part
@@ -508,7 +520,7 @@ CONTAINS
 
         part_spx = current%part_sp(1) + sxp
         part_spy = current%part_sp(2) + syp
-        part_spz = current%part_sp(3) + szp
+        part_spz = szp
         current%part_sp = (/ part_spx, part_spy, part_spz /)
 
         ! Calculate particle velocity from particle momentum
