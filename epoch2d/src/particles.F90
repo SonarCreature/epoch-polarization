@@ -520,7 +520,7 @@ CONTAINS
 
         part_spx = current%part_sp(1) + sxp
         part_spy = current%part_sp(2) + syp
-        part_spz = szp
+        part_spz = current%part_sp(3) + szp
         current%part_sp = (/ part_spx, part_spy, part_spz /)
 
         ! Calculate particle velocity from particle momentum
